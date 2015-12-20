@@ -340,12 +340,14 @@ def subgraphperperson(graph):
 def subgraphCheckInMovement(graph):
 	id_ = graph.getIntegerProperty("id")
 	type_ = graph.getStringProperty("type")
-	
 	for i in graph.getNodes():
+		tmpId=str(id_[i])
 		tmp=str(type_[i])
-		if not graph.getSubGraph(str(id_[i])).isSubGraph(graph.getSubGraph(str(id_[i])).getSubGraph(tmp)):
-			graph.getSubGraph(str(id_[i])).addSubGraph(tmp)
-		graph.getSubGraph(str(id_[i])).getSubGraph(tmp).addNode(i)
+		if not graph.isSubGraph(graph.getSubGraph(tmpId)):
+			graph.addSubGraph(tmpId)
+		if not graph.getSubGraph(tmpId).isSubGraph(graph.getSubGraph(tmpId).getSubGraph(tmp)):
+			graph.getSubGraph(tmpId).addSubGraph(tmp)
+		graph.getSubGraph(tmpId).getSubGraph(tmp).addNode(i)
 
 
 def main(graph): 
@@ -393,7 +395,7 @@ def main(graph):
 	#graph=place(graph,"e")
 
 	#subgraphperperson(graph)
-	#subgraphCheckInMovement(graph)
+	subgraphCheckInMovement(graph)
 
 	#graph=cptCheckIn(graph)
 	#graph=cptCheckIn(graph,graph.getSubGraph("persons"))
