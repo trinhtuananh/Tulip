@@ -363,9 +363,11 @@ def afficheCheckInMovement(graph):
 	viewColor=graph.getColorProperty("viewColor")
 	t=graph.getLayoutProperty("viewLayout")
 	tabSubGraph=[]	
+	print "chargement dans tableau"
 	for s in graph.getSubGraphs():
 		tabSubGraph.append(s)
-	a=trirapide(tabSubGraph)
+	print "debut tri"
+	a=quicksort(tabSubGraph)
 	for i in a:
 		y=y+1
 		x=0
@@ -412,6 +414,7 @@ def quicksort(array, compare=lambda x, y: x > y, start=None, end=None):
         i = partition(array, start, end-1, compare)
         quicksort(array, compare, start, i)
         quicksort(array, compare, i+1, end)
+    return array
         
 def main(graph): 
 	Stayed=graph.getIntegerProperty("Stayed")
@@ -458,7 +461,7 @@ def main(graph):
 	#graph=place(graph,"e")
 
 	#subgraphperperson(graph)
-	subgraphCheckInMovement(graph)
+	#subgraphCheckInMovement(graph)
 	afficheCheckInMovement(graph)
 	#detectSecurite(graph)
 	#graph=cptCheckIn(graph)
