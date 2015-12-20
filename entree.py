@@ -330,7 +330,11 @@ def subgraphperperson(graph):
 def subgraphCheckInMovement(graph):
 	id_ = graph.getIntegerProperty("id")
 	type_ = graph.getStringProperty("type")
+	p=0.0
 	for i in graph.getNodes():
+		p=p+1
+		if p%round(graph.numberOfNodes()/100)==0:
+			print (p/graph.numberOfNodes()*100 , "%")
 		tmpId=str(id_[i])
 		tmp=str(type_[i])
 		if not graph.isSubGraph(graph.getSubGraph(tmpId)):
@@ -358,7 +362,10 @@ def afficheCheckInMovement(graph):
 	y=0
 	viewColor=graph.getColorProperty("viewColor")
 	t=graph.getLayoutProperty("viewLayout")
-	a=tri(graph)
+	tabSubGraph=[]	
+	for s in graph.getSubGraphs():
+		tabSubGraph.append(s)
+	a=trirapide(tabSubGraph)
 	for i in a:
 		y=y+1
 		x=0
@@ -378,25 +385,34 @@ def afficheCheckInMovement(graph):
 				
 				
 	graph.setAttribute("viewLayout",t)
+	
+def partition(array, start, end, compare):
+    while start < end:
+        # au début de cette boucle, notre élément permettant la partition 
+        # est à la valeur 'start'
+        while start < end:
+            if compare(array[start].numberOfNodes(), array[end].numberOfNodes()):
+                (array[start], array[end])= (array[end], array[start])
+                break
+            end = end - 1
+        # au début de cette boucle, notre élément permettant la partition 
+        # est à la valeur 'end'
+        while start < end:
+            if compare(array[start].numberOfNodes(), array[end].numberOfNodes()):
+                (array[start], array[end]) = (array[end], array[start])
+                break
+            start = start + 1
+    return start
 
-def tri(graph):
-	#tri non optimise
-	t=[]
-	tmp=[]
-	mini=graph.getSubGraphs().next()
-	for ui in graph.getSubGraphs():
-		tmp.append(ui)
-		
-	for k in range(len(tmp)):		
-		mini=tmp[0]
-		for j in range(len(tmp)):
-			
-			if mini.numberOfNodes()>=(tmp[j]).numberOfNodes():
-				mini=tmp[j]
-		tmp.pop(tmp.index(mini))
-		t.append(mini)
-
-	return t
+def quicksort(array, compare=lambda x, y: x > y, start=None, end=None):
+    """Le plus rapide des tris par échanges pour la plupart des usages."""
+    if start is None: start = 0
+    if end is None: end = len(array)
+    if start < end:
+        i = partition(array, start, end-1, compare)
+        quicksort(array, compare, start, i)
+        quicksort(array, compare, i+1, end)
+        
 def main(graph): 
 	Stayed=graph.getIntegerProperty("Stayed")
 	Timestamp = graph.getStringProperty("Timestamp")
