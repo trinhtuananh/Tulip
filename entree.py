@@ -191,7 +191,7 @@ def detecteCheckin(graph):
 			graph.getSubGraph("test").addNode(i)
 			
 		elif type_[i]!="movement" :
-			viewColor[i]=tlp.Color(0,0,0)
+			viewColor[i]=tlp.Color(255,255,0)
 
 			
 			
@@ -221,26 +221,16 @@ def personCount(graph):
 
 	return (person)
 	
-def place(graph, subgraph):
+def place(graph ):
+	print graph.numberOfNodes()
 	t=graph.getLayoutProperty("viewLayout")
 	X=graph.getIntegerProperty("X")
 	Y = graph.getIntegerProperty("Y")
-	graph.addSubGraph(subgraph)
-	for i in graph.getSubGraph(subgraph).getNodes():
-		c = t[i]
-		c.setX(X[i])
-		t[i]=c
-
-
-		cc = t[i]
-		cc.setY(Y[i])
-		t[i]=cc
-	graph.getSubGraph(subgraph).setAttribute("viewLayout",t)
+	for i in graph.getNodes():
+		t[i]=tlp.Coord(X[i],Y[i],0)
+	#graph.setAttribute("viewLayout",t)
 	
-	for j in graph.getNodes():
-		graph.getSubGraph(subgraph).addNode(j)
-	graph.setAttribute("viewLayout",t)
-	return graph
+
 	
 def verif(graph):
 	t=personCount(graph)
@@ -349,7 +339,64 @@ def subgraphCheckInMovement(graph):
 			graph.getSubGraph(tmpId).addSubGraph(tmp)
 		graph.getSubGraph(tmpId).getSubGraph(tmp).addNode(i)
 
+def detectSecurite(graph):
+	type_ = graph.getStringProperty("type")
+	graph.addSubGraph("Security")
+	secu=tlp.newGraph()
+	for i in graph.getSubGraphs():
+		Timestamp = graph.getStringProperty("Timestamp")
+		if graph.getSubGraph(i.getName()).getSubGraph((("check-in")))!=None:
+			if graph.getSubGraph(i.getName()).getSubGraph((("check-in"))).numberOfNodes()<4:
 
+
+				t=graph.getSubGraph(i.getName())
+				graph.getSubGraph("Security").addCloneSubGraph(t.getName(),True)
+			#graph.getSubGraph("Security").inducedSubGraph(tmp)#i.getName(),False)
+			#graph.delSubGraph(graph.getSubGraph(i.getName()))
+
+def afficheCheckInMovement(graph):
+	y=0
+	viewColor=graph.getColorProperty("viewColor")
+	t=graph.getLayoutProperty("viewLayout")
+	a=tri(graph)
+	for i in a:
+		y=y+1
+		x=0
+
+		if graph.getSubGraph(i.getName()).isSubGraph(graph.getSubGraph(i.getName()).getSubGraph("movement")):
+			for j in graph.getSubGraph(i.getName()).getSubGraph("movement").getNodes():
+				
+				x=x+1
+				viewColor[j]=tlp.Color(255,0,0)
+				t[j]=tlp.Coord(x,y,0)
+
+		if graph.getSubGraph(i.getName()).isSubGraph(graph.getSubGraph(i.getName()).getSubGraph("check-in")):
+			for k in graph.getSubGraph(i.getName()).getSubGraph("check-in").getNodes():
+				x=x+1
+				viewColor[k]=tlp.Color(0,255,0)
+				t[k]=tlp.Coord(x,y,0)
+				
+				
+	graph.setAttribute("viewLayout",t)
+
+def tri(graph):
+	#tri non optimise
+	t=[]
+	tmp=[]
+	mini=graph.getSubGraphs().next()
+	for ui in graph.getSubGraphs():
+		tmp.append(ui)
+		
+	for k in range(len(tmp)):		
+		mini=tmp[0]
+		for j in range(len(tmp)):
+			
+			if mini.numberOfNodes()>=(tmp[j]).numberOfNodes():
+				mini=tmp[j]
+		tmp.pop(tmp.index(mini))
+		t.append(mini)
+
+	return t
 def main(graph): 
 	Stayed=graph.getIntegerProperty("Stayed")
 	Timestamp = graph.getStringProperty("Timestamp")
@@ -387,8 +434,8 @@ def main(graph):
 	viewTgtAnchorSize = graph.getSizeProperty("viewTgtAnchorSize")
 
 	#graph=createCoord(graph)
-	#graph=detecteCheckin(graph)
-	#graph=place(graph,"e")
+	#detecteCheckin(graph)
+	#place(graph)
 	#verif(graph)
 	#graph=getTemps(graph)
 	#graph=representeTemps(graph)
@@ -396,7 +443,8 @@ def main(graph):
 
 	#subgraphperperson(graph)
 	subgraphCheckInMovement(graph)
-
+	afficheCheckInMovement(graph)
+	#detectSecurite(graph)
 	#graph=cptCheckIn(graph)
 	#graph=cptCheckIn(graph,graph.getSubGraph("persons"))
 	#verif(graph.getSubGraph("persons"))
