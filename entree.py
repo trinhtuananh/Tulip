@@ -461,7 +461,7 @@ def main(graph):
 	#graph=place(graph,"e")
 
 	#subgraphperperson(graph)
-	#subgraphCheckInMovement(graph)
+	subgraphCheckInMovement(graph)
 	afficheCheckInMovement(graph)
 	#detectSecurite(graph)
 	#graph=cptCheckIn(graph)
