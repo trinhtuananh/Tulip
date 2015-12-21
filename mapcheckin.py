@@ -29,6 +29,8 @@ from tulipgui import *
 # to run the script on the current graph
 def classementjour(graph):
 	Timestamp = graph.getStringProperty("Timestamp")
+	id_ = graph.getIntegerProperty("id")
+
 	p=0.0
 	graph.addSubGraph("Friday")
 	graph.addSubGraph("Saturday")
@@ -37,13 +39,22 @@ def classementjour(graph):
 		p=p+1
 		if p%round(graph.numberOfNodes()/100)==0:
 			print (p/graph.numberOfNodes()*100 , "%")
+		if 		p==graph.numberOfNodes()-1:
+			print Timestamp[i]
 
 		if Timestamp[i][8]=="6" :
-			graph.getSubGraph("Friday").addNode(i)
+			subgraph="Friday"
 		elif Timestamp[i][8]=="7":
-			graph.getSubGraph("Saturday").addNode(i)
+			subgraph="Saturday"
 		elif Timestamp[i][8]=="8":
-			graph.getSubGraph("Sunday").addNode(i)
+			subgraph="Sunday"
+			
+		if not graph.getSubGraph(subgraph).isDescendantGraph(graph.getSubGraph(subgraph).getSubGraph(str(id_[i]))):
+			graph.getSubGraph(subgraph).addSubGraph(str(id_[i]))
+		
+		graph.getSubGraph(subgraph).getSubGraph(str(id_[i])).addNode(i)
+
+			
 def subgraphperson(graph,subgraph):
 	graph.getSubGraph(subgraph).addSubGraph("map")
 	id_ = graph.getIntegerProperty("id")
@@ -100,7 +111,7 @@ def checkinjour(graph,subgraph):
 					for f in graph.getInOutEdges(aa)	:
 						for g in graph.getInOutEdges(bb):
 							if f==g:
-								viewSize[f]=viewSize[f]+0.01
+								viewSize[f]=viewSize[f]+0.1
 								yy=True
 					if not yy :
 
@@ -135,9 +146,7 @@ def main(graph):
 	viewTexture = graph.getStringProperty("viewTexture")
 	viewTgtAnchorShape = graph.getIntegerProperty("viewTgtAnchorShape")
 	viewTgtAnchorSize = graph.getSizeProperty("viewTgtAnchorSize")
-
 	classementjour(graph)
-	subgraphperson(graph,"Friday")	
 	checkinjour(graph, "Friday")
 
 
