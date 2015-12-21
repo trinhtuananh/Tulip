@@ -64,6 +64,10 @@ def subgraphperson(graph,subgraph):
 		graph.getSubGraph(subgraph).getSubGraph(str(id_[i])).addNode(i)
 		
 def checkinjour(graph,subgraph):
+	if  graph.getSubGraph(subgraph).isDescendantGraph(graph.getSubGraph(subgraph).getSubGraph("map")):
+		graph.getSubGraph(subgraph).delSubGraph(graph.getSubGraph(subgraph).getSubGraph("map"))
+	graph.getSubGraph(subgraph).addSubGraph("map")
+
 	viewLayout = graph.getLayoutProperty("viewLayout")
 	viewSize = graph.getSizeProperty("viewSize")
 
