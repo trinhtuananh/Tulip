@@ -16,16 +16,17 @@
 from tulip import *
 from tulipgui import *
 import math
+from numpy import *
+from time import *
 
-
-def kmeans(k, properties) :
+def kmeans(k, properties,subgraph) :
 	ClustersList = []
 	BaryList = []
 	NodesList = []
 	
 	print "Initialisation des clusters"
 
-	for n in graph.getSubGraph("Attractions").getNodes():
+	for n in graph.getSubGraph(subgraph).getSubGraph("map").getNodes():
 		NodesList.append(n)
 	print ClustersList
 	for i in range (0, k) :
@@ -82,7 +83,7 @@ def CalculEuclidienne(node, BaryList, properties) :
 		for j in range (len(properties)) :
 			carre = (properties[j][node] - BaryList[i][j])**2
 			total += carre
-		square = sqrt(total)
+		square = math.sqrt(total)
 		DistanceEuclidienne.append(square)
 	Tab = array(DistanceEuclidienne)
 	
@@ -92,17 +93,13 @@ def CalculEuclidienne(node, BaryList, properties) :
 
 def ColorOfCluster(cluster, nb):
 	if nb == 0 :
-		color = tlp.Color(0,100,0)
+		color = tlp.Color(255,0,0)
 	elif nb == 1 :
-		color = tlp.Color(0,191,255)
-	elif nb == 2 :
 		color = tlp.Color(0,0,255)
-	elif nb == 3 :
-		color = tlp.Color(255,0,0) 
-	elif nb == 4 :
+	elif nb == 2 :
 		color = tlp.Color(0,255,0)
-	elif nb == 5 :
-		color = tlp.Color(0,0,100)
+	elif nb == 3 :
+		color = tlp.Color(255,255,0) 
 	viewColor = graph.getColorProperty("viewColor")
 
 	for n in cluster :
@@ -211,20 +208,18 @@ def subgraphperson(graph,subgraph):
 			graph.getSubGraph(subgraph).addSubGraph(str(id_[i]))
 		graph.getSubGraph(subgraph).getSubGraph(str(id_[i])).addNode(i)
 		
+		
+#Incremente freq d'une arete à chaque deplacement entre 2 attractions
 def checkinjour(graph,subgraph):
 	viewColor = graph.getColorProperty("viewColor")
 	freq=graph.getIntegerProperty("freq")
-	graph.delEdges(graph.getEdges())
-	if  graph.getSubGraph(subgraph).isDescendantGraph(graph.getSubGraph(subgraph).getSubGraph("map")):
-		graph.getSubGraph(subgraph).delSubGraph(graph.getSubGraph(subgraph).getSubGraph("map"))
-	graph.getSubGraph(subgraph).addSubGraph("map")
+
 
 	viewLayout = graph.getLayoutProperty("viewLayout")
 	viewSize = graph.getSizeProperty("viewSize")
 
 	X = graph.getIntegerProperty("X")
 	Y = graph.getIntegerProperty("Y")
-	graph.delNodes(graph.getSubGraph(subgraph).getSubGraph("map").getNodes())
 	graph.delEdges(graph.getSubGraph(subgraph).getSubGraph("map").getEdges())
 
 	p=0.0
@@ -249,27 +244,17 @@ def checkinjour(graph,subgraph):
 							bb=i
 						if aa!=None and bb!=None:
 							break
-						
-					if bb==None:
-						bb=graph.getSubGraph(subgraph).getSubGraph("map").addNode()
-						X[bb]=X[b]
-						Y[bb]=Y[b]
-						viewLayout[bb]=tlp.Coord(X[bb],Y[bb],0)
 
-					if aa==None:
-						aa=graph.getSubGraph(subgraph).getSubGraph("map").addNode()
-						X[aa]=X[a]
-						Y[aa]=Y[a]
-						viewLayout[aa]=tlp.Coord(X[aa],Y[aa],0)
 
 					yy=False
-					for f in graph.getOutEdges(aa)	:
-						for g in graph.getInEdges(bb):
+					for f in graph.getSubGraph(subgraph).getSubGraph("map").getInOutEdges(aa)	:
+						for g in graph.getSubGraph(subgraph).getSubGraph("map").getInOutEdges(bb):
 							if f==g:
 								freq[f]=freq[f]+1
 							
 
 								yy=True
+								break
 					if not yy :
 
 						tmpedge=graph.getSubGraph(subgraph).getSubGraph("map").addEdge(aa,bb)
@@ -293,35 +278,45 @@ def colorEdges(graph,subgraph):
 	pas=765.0/r
 	for e in graph.getSubGraph(subgraph).getSubGraph("map").getEdges():
 		x=int(freq[e]*pas)
-		"""if freq[e]<(256/pas) and freq[e]>10:
+		if freq[e]<(256/pas) and freq[e]>10:
 			viewColor[e]=tlp.Color(0,x,0)
 		elif freq[e]<(511/pas)  and freq[e]>10:
 			x=x-256
 			viewColor[e]=tlp.Color(0,0,x)
 		elif   freq[e]>510 :
 			x=x-510
-			viewColor[e]=tlp.Color(x,0,0)"""
-		if freq[e]>256 :
+			viewColor[e]=tlp.Color(x,0,0)
+
+def colorSpecificEdges(graph,subgraph):
+	freq=graph.getIntegerProperty("freq")
+	viewColor = graph.getColorProperty("viewColor")
+
+	r=0	
+	for g in graph.getEdges():
+		if r<freq[g]:
+			r=freq[g]
+	
+	pas=765.0/r
+	for e in graph.getSubGraph(subgraph).getSubGraph("map").getEdges():
+		if freq[e]*pas>510 :
 			viewColor[e]=tlp.Color(0,0,0)
 		else :
 			viewColor[e]=tlp.Color(255,255,255,0)
 
 
-def placementAttractions(graph):
+def placementAttractions(graph,subgraph):
 	viewLayout = graph.getLayoutProperty("viewLayout")
 	X = graph.getIntegerProperty("X")
 	Y = graph.getIntegerProperty("Y")
-	for i in graph.getSubGraph("Attractions").getNodes():
+	for i in graph.getSubGraph(subgraph).getSubGraph("map").getNodes():
 		viewLayout[i]=tlp.Coord(X[i],Y[i],0)
 		
 def countFreqPerAttraction(graph,subgraph):
 	X = graph.getIntegerProperty("X")
 	Y = graph.getIntegerProperty("Y")
 	freqAttraction=graph.getIntegerProperty("FreqAttraction")
-	for t in graph.getSubGraph("Attractions").getNodes():
-		freqAttraction[t]=0
 	for i in graph.getSubGraph(subgraph).getNodes():
-		for j in graph.getSubGraph("Attractions").getNodes():
+		for j in graph.getSubGraph(subgraph).getSubGraph("map").getNodes():
 			if X[i]==X[j] and Y[i]==Y[j]:
 				freqAttraction[j]=freqAttraction[j]+1
 def main(graph): 
@@ -352,10 +347,11 @@ def main(graph):
 	viewTgtAnchorShape = graph.getIntegerProperty("viewTgtAnchorShape")
 	viewTgtAnchorSize = graph.getSizeProperty("viewTgtAnchorSize")
 	freqAttraction=graph.getIntegerProperty("FreqAttraction")
-	
+	type_=graph.getStringProperty("type")
+	zone=graph.getStringProperty("zone")
+
 	#classementjour(graph)
-	#checkinjour(graph, "Saturday")
-	#colorEdges(graph,"Saturday")
-	placementAttractions(graph)
-	#countFreqPerAttraction(graph,"Saturday")
-	#kmeans(5,[freqAttraction])
+	checkinjour(graph, "Saturday")
+	colorSpecificEdges(graph,"Saturday")
+	countFreqPerAttraction(graph,"Saturday")
+	#kmeans(3,[freqAttraction],"Friday")
