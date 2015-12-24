@@ -351,7 +351,7 @@ def main(graph):
 	zone=graph.getStringProperty("zone")
 
 	#classementjour(graph)
-	checkinjour(graph, "Saturday")
-	colorSpecificEdges(graph,"Saturday")
-	countFreqPerAttraction(graph,"Saturday")
-	#kmeans(3,[freqAttraction],"Friday")
+	#checkinjour(graph, "Saturday")
+	colorEdges(graph,"Friday")
+	#countFreqPerAttraction(graph,"Saturday")
+	#kmeans(3,[freqAttraction],"Saturday")
