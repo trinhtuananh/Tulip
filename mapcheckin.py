@@ -260,11 +260,7 @@ def checkinjour(graph,subgraph):
 						tmpedge=graph.getSubGraph(subgraph).getSubGraph("map").addEdge(aa,bb)
 						freq[tmpedge]=0
 				b=n
-	r=0	
-	for g in graph.getEdges():
-		if r<freq[g]:
-			r=freq[g]
-	print r				
+			
 				
 def colorEdges(graph,subgraph):
 	freq=graph.getIntegerProperty("freq")
@@ -319,6 +315,60 @@ def countFreqPerAttraction(graph,subgraph):
 		for j in graph.getSubGraph(subgraph).getSubGraph("map").getNodes():
 			if X[i]==X[j] and Y[i]==Y[j]:
 				freqAttraction[j]=freqAttraction[j]+1
+				
+def generationColor(graph,subgraph):
+	dico={}
+	X = graph.getIntegerProperty("X")
+	zone=graph.getStringProperty("zone")
+
+	type_=graph.getSubGraph("Sunday").getSubGraph("map").getStringProperty("type")
+	couleurs=[tlp.Color(125,0,0),tlp.Color(0,125,0),tlp.Color(255,0,0),tlp.Color(125,0,125),tlp.Color(0,0,255),tlp.Color(0,255,0)]
+	for i in graph.getSubGraph(subgraph).getSubGraph("map").getNodes():
+		print zone[i]
+
+		if type_[i] not in dico.keys():
+			dico[type_[i]]=couleurs.pop(0)
+		
+		if len(dico)==6:
+			break
+	return dico					
+def colorAttractionperType(graph, subgraph,dico):
+	"""viewColor = graph.getColorProperty("viewColor")
+	type_=graph.getSubGraph(subgraph).getSubGraph("map").getStringProperty("type")
+
+	for i in graph.getSubGraph(subgraph).getSubGraph("map").getNodes():
+		viewColor[i]=dico[type_[i]]"""
+	viewColor = graph.getColorProperty("viewColor")
+	type_=graph.getSubGraph(subgraph).getStringProperty("type")
+
+	for i in graph.getSubGraph(subgraph).getNodes():
+		viewColor[i]=dico[type_[i]]
+		
+def AttractionWE(graph):
+
+	X = graph.getIntegerProperty("X")
+	Y = graph.getIntegerProperty("Y")
+	freqAttractionFriday=graph.getIntegerProperty("FreqAttractionFriday")
+	freqAttractionSaturday=graph.getIntegerProperty("FreqAttractionSaturday")
+	freqAttractionSunday=graph.getIntegerProperty("FreqAttractionSunday")
+	for subgraph in graph.getSubGraphs():
+
+		if subgraph.getName()!="mapWE":
+
+			for subsubgraph in graph.getSubGraph(subgraph.getName()).getSubGraphs():
+
+				if subsubgraph.getName()!="map":
+					for n in graph.getSubGraph(subgraph.getName()).getSubGraph(subsubgraph.getName()).getNodes():
+						for m in graph.getSubGraph("mapWE").getNodes():			
+							if X[n]==X[m] and Y[n]==Y[m]:
+								if subgraph.getName()=="Friday":
+									freqAttractionFriday[m]=freqAttractionFriday[m]+1
+								elif subgraph.getName()=="Saturday":
+									freqAttractionSaturday[m]=freqAttractionSaturday[m]+1
+								elif subgraph.getName()=="Sunday":
+									freqAttractionSunday[m]=freqAttractionSunday[m]+1
+
+
 def main(graph): 
 	Timestamp = graph.getStringProperty("Timestamp")
 	X = graph.getIntegerProperty("X")
@@ -347,11 +397,14 @@ def main(graph):
 	viewTgtAnchorShape = graph.getIntegerProperty("viewTgtAnchorShape")
 	viewTgtAnchorSize = graph.getSizeProperty("viewTgtAnchorSize")
 	freqAttraction=graph.getIntegerProperty("FreqAttraction")
-	type_=graph.getStringProperty("type")
+	type_=graph.getSubGraph("Sunday").getSubGraph("map").getStringProperty("type")
 	zone=graph.getStringProperty("zone")
-
+	dicoCouleur=generationColor(graph,"Sunday")
+	print dicoCouleur
+	#AttractionWE(graph)
+	colorAttractionperType(graph,"mapWE",dicoCouleur)
 	#classementjour(graph)
-	#checkinjour(graph, "Saturday")
-	colorEdges(graph,"Friday")
-	#countFreqPerAttraction(graph,"Saturday")
+	#checkinjour(graph, "Sunday")
+	#colorEdges(graph,"Saturday")
+	#countFreqPerAttraction(graph,"Sunday")
 	#kmeans(3,[freqAttraction],"Saturday")
