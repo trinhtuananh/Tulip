@@ -26,7 +26,7 @@ def kmeans(k, properties,subgraph) :
 	
 	print "Initialisation des clusters"
 
-	for n in graph.getSubGraph(subgraph).getSubGraph("map").getNodes():
+	for n in graph.getSubGraph(subgraph).getSubGraph("map").getEdges():
 		NodesList.append(n)
 	print ClustersList
 	for i in range (0, k) :
@@ -275,15 +275,15 @@ def colorEdges(graph,subgraph):
 	for e in graph.getSubGraph(subgraph).getSubGraph("map").getEdges():
 		x=int(freq[e]*pas)
 		if freq[e]<(256/pas) and freq[e]>10:
-			viewColor[e]=tlp.Color(0,x,0)
+			viewColor[e]=tlp.Color(0,255,0)
 		elif freq[e]<(511/pas)  and freq[e]>10:
 			x=x-256
-			viewColor[e]=tlp.Color(0,0,x)
+			viewColor[e]=tlp.Color(0,0,255)
 		elif   freq[e]>510 :
 			x=x-510
-			viewColor[e]=tlp.Color(x,0,0)
+			viewColor[e]=tlp.Color(255,0,0)
 
-def colorSpecificEdges(graph,subgraph):
+def colorSpecificEdges(graph,subgraph,limit):
 	freq=graph.getIntegerProperty("freq")
 	viewColor = graph.getColorProperty("viewColor")
 
@@ -294,7 +294,7 @@ def colorSpecificEdges(graph,subgraph):
 	
 	pas=765.0/r
 	for e in graph.getSubGraph(subgraph).getSubGraph("map").getEdges():
-		if freq[e]*pas>510 :
+		if freq[e]>limit :
 			viewColor[e]=tlp.Color(0,0,0)
 		else :
 			viewColor[e]=tlp.Color(255,255,255,0)
@@ -315,7 +315,18 @@ def countFreqPerAttraction(graph,subgraph):
 		for j in graph.getSubGraph(subgraph).getSubGraph("map").getNodes():
 			if X[i]==X[j] and Y[i]==Y[j]:
 				freqAttraction[j]=freqAttraction[j]+1
-				
+
+def countFreqPerAttractionWE(graph):
+	X = graph.getIntegerProperty("X")
+	Y = graph.getIntegerProperty("Y")
+	freqAttraction=graph.getIntegerProperty("FreqAttraction")
+	for subgraph in graph.getSubGraphs():
+		if subgraph.getName()!="mapWE":
+			for i in graph.getSubGraph(subgraph.getName()).getNodes():
+				for j in graph.getSubGraph("mapWE").getNodes():
+					if X[i]==X[j] and Y[i]==Y[j]:
+						freqAttraction[j]=freqAttraction[j]+1	
+							
 def generationColor(graph,subgraph):
 	dico={}
 	X = graph.getIntegerProperty("X")
@@ -333,17 +344,33 @@ def generationColor(graph,subgraph):
 			break
 	return dico					
 def colorAttractionperType(graph, subgraph,dico):
-	"""viewColor = graph.getColorProperty("viewColor")
+	viewColor = graph.getColorProperty("viewColor")
 	type_=graph.getSubGraph(subgraph).getSubGraph("map").getStringProperty("type")
 
 	for i in graph.getSubGraph(subgraph).getSubGraph("map").getNodes():
-		viewColor[i]=dico[type_[i]]"""
-	viewColor = graph.getColorProperty("viewColor")
-	type_=graph.getSubGraph(subgraph).getStringProperty("type")
-
-	for i in graph.getSubGraph(subgraph).getNodes():
 		viewColor[i]=dico[type_[i]]
-		
+		viewColor[i]=dico[type_[i]]
+
+def freqCreightonPavilionperHour(graph,subgraph):
+	id_ = graph.getIntegerProperty("id")
+
+	graph.delNodes(graph.getSubGraph(subgraph).getSubGraph("creightonPavilion").getNodes())
+	Timestamp = graph.getStringProperty("Timestamp")
+	heure = graph.getIntegerProperty("heure")
+	X = graph.getIntegerProperty("X")
+	Y = graph.getIntegerProperty("Y")
+	p=0
+	for n in graph.getSubGraph(subgraph).getNodes():
+		p=p+1
+		if p%(graph.getSubGraph(subgraph).numberOfNodes()/100)==0:
+			print (float(p)/graph.getSubGraph(subgraph).numberOfNodes()*100.0 , "%")
+		if n not in graph.getSubGraph(subgraph).getSubGraph("creightonPavilion").getNodes() and n not in graph.getSubGraph(subgraph).getSubGraph("map").getNodes():
+			if X[n]==32 and Y[n]==33:
+				tmp=graph.getSubGraph(subgraph).getSubGraph("creightonPavilion").addNode()
+				Timestamp[tmp]=Timestamp[n]
+				t=str(Timestamp[n][10:12])
+				heure[tmp]=float(t)
+				id_[tmp]=id_[n]
 def AttractionWE(graph):
 
 	X = graph.getIntegerProperty("X")
@@ -399,12 +426,23 @@ def main(graph):
 	freqAttraction=graph.getIntegerProperty("FreqAttraction")
 	type_=graph.getSubGraph("Sunday").getSubGraph("map").getStringProperty("type")
 	zone=graph.getStringProperty("zone")
+	freq=graph.getSubGraph("Saturday").getSubGraph("map").getIntegerProperty("freq")
+
 	dicoCouleur=generationColor(graph,"Sunday")
 	print dicoCouleur
+	#countFreqPerAttractionWE(graph)
+	freqCreightonPavilionperHour(graph,"Friday")
 	#AttractionWE(graph)
-	colorAttractionperType(graph,"mapWE",dicoCouleur)
+	#colorAttractionperType(graph,"Saturday",dicoCouleur)
+	#colorAttractionperType(graph,"Friday",dicoCouleur)
+
+	#colorAttractionperType(graph,"Sunday",dicoCouleur)
+
 	#classementjour(graph)
 	#checkinjour(graph, "Sunday")
-	#colorEdges(graph,"Saturday")
+	#colorSpecificEdges(graph,"Friday",700)
+	#colorSpecificEdges(graph,"Saturday",900)
+	#colorSpecificEdges(graph,"Sunday",1100)
+
 	#countFreqPerAttraction(graph,"Sunday")
-	#kmeans(3,[freqAttraction],"Saturday")
+	#kmeans(3,[freq],"Saturday")
